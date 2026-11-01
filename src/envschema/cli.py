@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from typing import List
+from typing import List, Optional
 
 from .validator import EnvSchema
 
@@ -30,9 +30,33 @@ def build_example(schemas: List[EnvSchema]) -> str:
     return "\n".join(lines)
 
 
+def export_example(
+    schemas: List[EnvSchema], output: Optional[str] = None
+) -> str:
+    """Export .env.example content from schemas.
+
+    Args:
+        schemas: List of EnvSchema definitions
+        output: Optional file path to write the example to
+
+    Returns:
+        The generated .env.example content as a string
+    """
+    content = build_example(schemas)
+    if output:
+        with open(output, "w") as f:
+            f.write(content)
+    return content
+
+
 def main(argv: List[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="envschema - Export .env.example from schema definitions"
+        description="envschema - Zero-dependency typed .env validator"
+    )
+    parser.add_argument(
+        "--export-example",
+        action="store_true",
+        help="Generate .env.example from schema definitions",
     )
     parser.add_argument(
         "--output",
@@ -42,11 +66,12 @@ def main(argv: List[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    # Import here to avoid circular import when used as library only
-    from . import EnvSchema as _  # noqa: F401
+    if args.export_example:
+        print("Use export_example() in Python with your EnvSchema list")
+        print(f"Example output would be written to: {args.output}")
+        return 0
 
-    print("envschema CLI: define schemas in Python and call build_example()")
-    print(f"Example output would be written to: {args.output}")
+    parser.print_help()
     return 0
 
 
